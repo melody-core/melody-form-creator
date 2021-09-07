@@ -5,6 +5,7 @@ import Sortable from "sortablejs";
 export const useSortAble = () => {
   const baseComponentWrapRef = useRef(null);
   const canvarsWrapRef = useRef(null);
+  let currentItemPath = { x: 0, y: 0 };
   useEffect(() => {
     new Sortable(baseComponentWrapRef.current, {
       group: {
@@ -19,17 +20,31 @@ export const useSortAble = () => {
       },
       onEnd: function (evt) {
         // 拖拽结束后
-        console.log("evt");
-        console.log(evt);
+        // 没有拖拽过去则不执行任何操作
+        if (evt.to !== canvarsWrapRef.current) {
+          return;
+        }
+        // 拖拽完毕，应该重置JSON-Sechema
+        console.log(canvarsWrapRef.current.children);
       },
     });
 
     new Sortable(canvarsWrapRef.current, {
       group: "shared",
       animation: 150,
+      onStart: (evt) => {
+        // 记录目录起始位置，以便结束后对比，以节省性能
+        currentItemPath.x = evt.item.offsetLeft;
+        currentItemPath.y = evt.item.offsetTop;
+      },
       onEnd: function (evt) {
-        console.log("evt");
-        console.log(evt);
+        const { offsetLeft, offsetTop } = evt.item;
+        // 位置没变化就不要浪费性能
+        if (currentItemPath.x === offsetLeft && currentItemPath.y === offsetTop) {
+          return;
+        }
+        // 拖拽完毕，应该重置JSON-Sechema
+        console.dir(canvarsWrapRef.current.children);
       },
     });
   }, []);
