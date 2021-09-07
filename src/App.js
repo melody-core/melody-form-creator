@@ -14,9 +14,9 @@ function App() {
     <div className={styles['app']}>
       <div className={styles['baseWrap']} ref={baseComponentWrapRef}>
         <div data-foo="abcf">123</div>
-        <div data-foo="abcf">1</div>
-        <div data-foo="abcf">2</div>
-        <div data-foo="abcf">3</div>
+        <div data-foo="abcf">123432</div>
+        <div data-foo="abcf">232432</div>
+        <div data-foo="abcf">343242345</div>
       </div>
       <div className={styles['canvarsWrap']} ref={canvarsWrapRef}>
       </div>

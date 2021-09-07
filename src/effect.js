@@ -1,5 +1,46 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useInitState } from './lib/lifeHooks';
+
 import Sortable from "sortablejs";
+
+
+const getDefualtDataByType = (type) => {
+
+}
+
+
+// 定义核心数据树,随时准备预览
+export const useSchemeJSON = () => {
+  const [json, setJson] = useInitState({
+    children: []
+  });
+  const updateJSONAfterDrag = useCallback((el)=>{
+      el.children?.forEach(item => {
+        
+      })
+  }, [])
+  const updateJSONByEditor = useCallback((key, type)=>{
+    const {children = []} = json;
+    const targetIndex = json.children.findIndex(item => item.key === targetIndex);
+    if(!targetIndex){
+      console.error(`have no this key item! ${key}`);
+      return ;
+    }
+    if(type === 'copy'){
+      children.splice(targetIndex, 0, children[targetIndex]);
+    }else{
+      children.splice(targetIndex, 1);
+    }
+    setJson({
+      children: [...children]
+    })
+  })
+  return {
+    json,
+    updateJSONAfterDrag,
+    updateJSONByEditor
+  }
+}
 
 // 进行拖拽绑定
 export const useSortAble = () => {
