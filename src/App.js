@@ -1,26 +1,39 @@
 
-import { useSortAble } from './effect'
+import { useSchemeJSON, useSortAble } from './effect'
+import {baseComponents} from './config/BaseComponents';
 
 import styles from './App.module.css';
 
 
 function App() {
+  const { json, updateJSONAfterMove, updateJSONByEditor, updateJSONAfterSort } = useSchemeJSON();
   const {
     baseComponentWrapRef,
     canvarsWrapRef
-  } = useSortAble();
-
+  } = useSortAble(updateJSONAfterMove, updateJSONAfterSort);
+  console.log('json', json);
   return (
     <div className={styles['app']}>
-      <div className={styles['baseWrap']} ref={baseComponentWrapRef}>
-        <div data-foo="abcf">123</div>
-        <div data-foo="abcf">123432</div>
-        <div data-foo="abcf">232432</div>
-        <div data-foo="abcf">343242345</div>
+      <div className={styles['baseWrap']}>
+        <div>
+          <div className={styles['base-title']}>
+              基础组件
+          </div>
+          <div className={styles['base-list']} ref={baseComponentWrapRef}>
+            {baseComponents.map(item => (
+              <div className={styles['base-item-com']} data-type={item.key} key={item.key}>
+                {item.title}
+              </div>
+            ))}
+          </div>
+        </div>
+
+
       </div>
       <div className={styles['canvarsWrap']} ref={canvarsWrapRef}>
+        {json.children.map(item => (<div key={item.key}>{item.type}</div>))}
       </div>
-      <div className={styles['editorWrap']}>右</div>
+      <div className={styles['editorWrap']}>编辑区</div>
     </div>
   );
 }

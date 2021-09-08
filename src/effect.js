@@ -1,49 +1,59 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useInitState } from './lib/lifeHooks';
+import { useEffect, useRef } from "react";
+import { useInitState } from "./lib/lifeHooks";
+import createHash from './lib/createHash';
 
 import Sortable from "sortablejs";
-
-
-const getDefualtDataByType = (type) => {
-
-}
-
 
 // 定义核心数据树,随时准备预览
 export const useSchemeJSON = () => {
   const [json, setJson] = useInitState({
-    children: []
+    children: [],
   });
-  const updateJSONAfterDrag = useCallback((el)=>{
-      el.children?.forEach(item => {
-        
-      })
-  }, [])
-  const updateJSONByEditor = useCallback((key, type)=>{
-    const {children = []} = json;
-    const targetIndex = json.children.findIndex(item => item.key === targetIndex);
-    if(!targetIndex){
+  const updateJSONAfterSort = (oldIndex, newIndex) => {
+    const { children = [] } = json;
+    children[oldIndex] = children.splice(newIndex, 1, children[oldIndex])[0];
+    setJson({
+      children: [...children],
+    });
+  };
+  const updateJSONAfterMove = (key, newIndex) => {
+    const { children = [] } = json;
+    children.splice(newIndex, 0, {
+      type: key,
+      key: key + createHash(5)  
+    });
+    setJson({
+      children: [...children],
+    });
+  }
+  const updateJSONByEditor = (key, type) => {
+    const { children = [] } = json;
+    const targetIndex = json.children.findIndex(
+      (item) => item.key === targetIndex
+    );
+    if (!targetIndex) {
       console.error(`have no this key item! ${key}`);
-      return ;
+      return;
     }
-    if(type === 'copy'){
+    if (type === "copy") {
       children.splice(targetIndex, 0, children[targetIndex]);
-    }else{
+    } else {
       children.splice(targetIndex, 1);
     }
     setJson({
-      children: [...children]
-    })
-  })
+      children: [...children],
+    });
+  };
   return {
     json,
-    updateJSONAfterDrag,
-    updateJSONByEditor
-  }
-}
+    updateJSONAfterSort,
+    updateJSONByEditor,
+    updateJSONAfterMove
+  };
+};
 
 // 进行拖拽绑定
-export const useSortAble = () => {
+export const useSortAble = (updateJSONAfterMove, updateJSONAfterSort) => {
   const baseComponentWrapRef = useRef(null);
   const canvarsWrapRef = useRef(null);
   let currentItemPath = { x: 0, y: 0 };
@@ -56,9 +66,6 @@ export const useSortAble = () => {
       },
       animation: 150,
       sort: false, // 设为false，禁止sort
-      setData: function (dataTransfer, dragEl) {
-        dataTransfer.setData("Text", dragEl.textContent); // `dataTransfer` object of HTML5 DragEvent
-      },
       onEnd: function (evt) {
         // 拖拽结束后
         // 没有拖拽过去则不执行任何操作
@@ -67,6 +74,8 @@ export const useSortAble = () => {
         }
         // 拖拽完毕，应该重置JSON-Sechema
         console.log(canvarsWrapRef.current.children);
+        canvarsWrapRef.current.removeChild(evt.item);
+        updateJSONAfterMove(evt.item.dataset.type, evt.newIndex);
       },
     });
 
@@ -81,11 +90,14 @@ export const useSortAble = () => {
       onEnd: function (evt) {
         const { offsetLeft, offsetTop } = evt.item;
         // 位置没变化就不要浪费性能
-        if (currentItemPath.x === offsetLeft && currentItemPath.y === offsetTop) {
+        if (
+          currentItemPath.x === offsetLeft &&
+          currentItemPath.y === offsetTop
+        ) {
           return;
         }
         // 拖拽完毕，应该重置JSON-Sechema
-        console.dir(canvarsWrapRef.current.children);
+        updateJSONAfterSort(evt.oldIndex, evt.newIndex);
       },
     });
   }, []);
